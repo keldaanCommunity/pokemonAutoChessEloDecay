@@ -1,10 +1,10 @@
 # Full reference: https://docs.airplane.dev/tasks/task-definition
 
 # Used by Airplane to identify your task. Do not change.
-slug: pokemonautochesselodecay
+slug: pokemon_auto_chess_elo_decay
 
 # A human-readable name for your task.
-name: pokemonAutoChessEloDecay
+name: pokemon-auto-chess-elo-decay
 
 # A human-readable description for your task.
 # description: "My Airplane task"
