@@ -1,8 +1,16 @@
 {
   "dependencies": {
-    "airplane": "^0.2.31"
+    "airplane": "^0.2.31",
+    "dotenv": "^16.0.3",
+    "esbuild": "0.17.5",
+    "mongoose": "^6.9.0"
   },
   "devDependencies": {
     "@types/node": "^18.11.18"
+  },
+  "scripts": {
+    "build": "esbuild index.ts --bundle --platform=node --packages=external --outfile=index.js",
+    "decay": "npm run build && npm run execute",
+    "execute":"node index.js"
   }
 }
