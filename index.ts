@@ -1,4 +1,4 @@
-import { connect } from "mongoose"
+import { connect, connection } from "mongoose"
 import dotenv from "dotenv"
 import userMetadata from "./models/user-metadata"
 import detailledStatistic from "./models/detailled-statistic"
@@ -9,7 +9,7 @@ export default async function main() {
   dotenv.config()
   const db = await connect(process.env.MONGO_URI!)
   const users = await userMetadata.find(
-    { elo: { $gt: 1250 } },
+    { elo: { $gt: 900 } },
     ["uid", "elo", "displayName"],
     { sort: { level: -1 } }
   )
@@ -29,13 +29,13 @@ export default async function main() {
         if (time) {
           const lastGame = new Date(time)
           const now = new Date(Date.now())
-          if (now.getTime() - lastGame.getTime() > 86400 * 1000 * 10) {
-            const decay = Math.max(1250, u.elo - 10)
+          if (now.getTime() - lastGame.getTime() > 86400 * 1e3 * 10) {
+            const decay = Math.max(1200, u.elo - 10)
             console.log(
               `user ${u.displayName} (${u.elo}) will decay to ${decay}`
             )
             u.elo = decay
-            u.save()
+            await u.save()
           }
         }
       }

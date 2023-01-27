@@ -842,7 +842,7 @@ async function main() {
               `user ${u.displayName} (${u.elo}) will decay to ${decay}`
             );
             u.elo = decay;
-            u.save();
+            await u.save();
           }
         }
       }
