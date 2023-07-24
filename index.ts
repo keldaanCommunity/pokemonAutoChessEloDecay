@@ -31,7 +31,7 @@ export default async function main() {
             const lastGame = new Date(time)
             const now = new Date(Date.now())
             if (now.getTime() - lastGame.getTime() > 86400 * 1e3 * 10) {
-              const decay = Math.max(1250, u.elo - 10)
+              const decay = Math.max(1000, u.elo - 10)
               console.log(
                 `user ${u.displayName} (${u.elo}) will decay to ${decay}`
               )
