@@ -654,7 +654,7 @@ var userMetadataSchema = new import_mongoose.Schema({
   },
   elo: {
     type: Number,
-    default: 1e3
+    default: 1000
   },
   donor: {
     type: Boolean,
@@ -817,7 +817,7 @@ async function main() {
   try {
     const db = await (0, import_mongoose3.connect)(process.env.MONGO_URI);
     const users = await user_metadata_default.find(
-      { elo: { $gt: 1250 } },
+      { elo: { $gt: 1000 } },
       ["uid", "elo", "displayName"],
       { sort: { level: -1 } }
     );
@@ -837,8 +837,8 @@ async function main() {
           if (time) {
             const lastGame = new Date(time);
             const now = new Date(Date.now());
-            if (now.getTime() - lastGame.getTime() > 86400 * 1e3 * 10) {
-              const decay = Math.max(1250, u.elo - 10);
+            if (now.getTime() - lastGame.getTime() > 86400 * 1000 * 10) {
+              const decay = Math.max(1000, u.elo - 10);
               console.log(
                 `user ${u.displayName} (${u.elo}) will decay to ${decay}`
               );
