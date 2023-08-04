@@ -10,11 +10,12 @@ export default async function main() {
   try {
     const db = await connect(process.env.MONGO_URI!)
     const users = await userMetadata.find(
-      { elo: { $gt: 1000 } },
+      { elo: { $gt: 1100 } },
       ["uid", "elo", "displayName"],
       { sort: { level: -1 } }
     )
     if (users) {
+      console.log("Checking activity of ", users.length, " users")
       for (let i = 0; i < users.length; i++) {
         const u = users[i]
         const stats = await detailledStatistic.find(
@@ -31,7 +32,7 @@ export default async function main() {
             const lastGame = new Date(time)
             const now = new Date(Date.now())
             if (now.getTime() - lastGame.getTime() > 86400 * 1000 * 10) {
-              const decay = Math.max(1000, u.elo - 10)
+              const decay = Math.max(1100, u.elo - 10)
               console.log(
                 `user ${u.displayName} (${u.elo}) will decay to ${decay}`
               )
@@ -44,7 +45,7 @@ export default async function main() {
     }
     await db.disconnect()
   } catch (error) {
-    console.log(error)
+    throw error
   }
 }
 
