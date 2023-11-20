@@ -46,6 +46,10 @@ node:
   # The version of Node to use. Valid values: 14, 16, 18.
   nodeVersion: "18"
 
+  envVars:
+    MONGO_URI:
+      config: MONGO_URI
+
   # A map of environment variables to use when running the task. The value
   # should be an object; if specifying raw values, the value must be an object
   # with `value` mapped to the value of the environment variable; if
@@ -56,7 +60,6 @@ node:
   #     config: database_url
   #   ENV_VAR_FROM_VALUE:
   #     value: env_var_value
-
 # Set label constraints to restrict this task to run only on agents with
 # matching labels.
 # constraints:
