@@ -14,7 +14,7 @@ export default async function main() {
       ["uid", "elo", "displayName"],
       { sort: { level: -1 } }
     )
-    if (users) {
+    if (users && users.length > 0) {
       console.log("Checking activity of ", users.length, " users")
       for (let i = 0; i < users.length; i++) {
         const u = users[i]
@@ -42,6 +42,9 @@ export default async function main() {
           }
         }
       }
+    }
+    else{
+      console.log('No users to check')
     }
     await db.disconnect()
   } catch (error) {
