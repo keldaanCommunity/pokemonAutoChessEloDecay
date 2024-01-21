@@ -814,8 +814,8 @@ var detailled_statistic_default = (0, import_mongoose2.model)(
 // index.ts
 async function main() {
   import_dotenv.default.config();
+  const db = await (0, import_mongoose3.connect)(process.env.MONGO_URI);
   try {
-    const db = await (0, import_mongoose3.connect)(process.env.MONGO_URI);
     const users = await user_metadata_default.find(
       { elo: { $gt: 1100 } },
       ["uid", "elo", "displayName"],
@@ -852,9 +852,10 @@ async function main() {
     } else {
       console.log("No users to check");
     }
-    await db.disconnect();
   } catch (error) {
     throw error;
+  } finally {
+    await db.disconnect();
   }
 }
 main();

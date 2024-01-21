@@ -7,8 +7,8 @@ import detailledStatistic from "./models/detailled-statistic"
 // function will be called.
 export default async function main() {
   dotenv.config()
+  const db = await connect(process.env.MONGO_URI!)
   try {
-    const db = await connect(process.env.MONGO_URI!)
     const users = await userMetadata.find(
       { elo: { $gt: 1100 } },
       ["uid", "elo", "displayName"],
@@ -42,13 +42,13 @@ export default async function main() {
           }
         }
       }
+    } else {
+      console.log("No users to check")
     }
-    else{
-      console.log('No users to check')
-    }
-    await db.disconnect()
   } catch (error) {
     throw error
+  } finally {
+    await db.disconnect()
   }
 }
 
