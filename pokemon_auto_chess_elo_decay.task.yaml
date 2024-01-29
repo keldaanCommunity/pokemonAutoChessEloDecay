@@ -44,7 +44,7 @@ node:
   entrypoint: index.js
 
   # The version of Node to use. Valid values: 14, 16, 18.
-  nodeVersion: "18"
+  nodeVersion: "20"
 
   envVars:
     MONGO_URI:
