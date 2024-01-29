@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose"
-import { Emotion, Role, Title } from "../types"
 
 export interface IUserMetadata {
   uid: string
@@ -16,16 +15,16 @@ export interface IUserMetadata {
   honors: string[]
   pokemonCollection: Map<string, IPokemonConfig>
   booster: number
-  titles: Title[]
-  title: "" | Title
-  role: Role
+  titles: string[]
+  title: string
+  role: string
 }
 
 export interface IPokemonConfig {
   dust: number
-  emotions: Emotion[]
-  shinyEmotions: Emotion[]
-  selectedEmotion: Emotion
+  emotions: string[]
+  shinyEmotions: string[]
+  selectedEmotion: string
   selectedShiny: boolean
   id: string
 }
@@ -125,9 +124,7 @@ const userMetadataSchema = new Schema({
     type: String
   },
   role: {
-    type: String,
-    enum: Role,
-    default: Role.BASIC
+    type: String
   },
   honors: [
     {
@@ -136,8 +133,7 @@ const userMetadataSchema = new Schema({
   ],
   titles: [
     {
-      type: String,
-      enum: Title
+      type: String
     }
   ],
   pokemonCollection: {
@@ -147,19 +143,16 @@ const userMetadataSchema = new Schema({
         type: Number
       },
       selectedEmotion: {
-        type: String,
-        enum: Emotion
+        type: String
       },
       emotions: [
         {
-          type: String,
-          enum: Emotion
+          type: String
         }
       ],
       shinyEmotions: [
         {
-          type: String,
-          enum: Emotion
+          type: String
         }
       ],
       selectedShiny: {

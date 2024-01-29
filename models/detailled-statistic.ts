@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose"
-import { Pkm, Item } from "../types"
 
 export interface Pokemon {
   name: string
@@ -19,16 +18,14 @@ export interface IDetailledStatistic {
 
 const pokemon = new Schema({
   name: {
-    type: String,
-    enum: Object.values(Pkm)
+    type: String
   },
   avatar: {
     type: String
   },
   items: [
     {
-      type: String,
-      enum: Item
+      type: String
     }
   ]
 })

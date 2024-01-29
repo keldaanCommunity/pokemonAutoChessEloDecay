@@ -1,7 +1,9 @@
-import { connect, connection } from "mongoose"
 import dotenv from "dotenv"
-import userMetadata from "./models/user-metadata"
+import { connect } from "mongoose"
 import detailledStatistic from "./models/detailled-statistic"
+import titleStatistic from "./models/title-statistic"
+import userMetadata from "./models/user-metadata"
+import { Title } from "./types"
 
 // This is your task's entrypoint. When your task is executed, this
 // function will be called.
@@ -45,9 +47,28 @@ export default async function main() {
     } else {
       console.log("No users to check")
     }
+
+    console.log("count the numbers of users...")
+    const count = await userMetadata.countDocuments()
+    console.log(count, " users found")
+
+    for (let i = 0; i < Object.values(Title).length; i++) {
+      const title = Object.values(Title)[i]
+      const titleCount = await userMetadata.countDocuments({
+        titles: { $in: title }
+      })
+      const titleStat = await titleStatistic.findOne({ name: title })
+      if (titleStat) {
+        titleStat.rarity = titleCount / count
+        await titleStat.save()
+      } else {
+        await titleStatistic.create({ name: title, rarity: titleCount / count })
+      }
+    }
   } catch (error) {
     throw error
   } finally {
+    console.log("disconnect db")
     await db.disconnect()
   }
 }
