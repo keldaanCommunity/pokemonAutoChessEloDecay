@@ -57,7 +57,6 @@ export default async function main() {
       const titleCount = await userMetadata.countDocuments({
         titles: { $in: title }
       })
-      const titleStat = await titleStatistic.findOne({ name: title })
       await titleStatistic.create({ name: title, rarity: titleCount / count })
     }
   } catch (error) {

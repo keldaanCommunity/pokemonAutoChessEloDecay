@@ -345,7 +345,6 @@ async function main() {
       const titleCount = await user_metadata_default.countDocuments({
         titles: { $in: title }
       });
-      const titleStat = await title_statistic_default.findOne({ name: title });
       await title_statistic_default.create({ name: title, rarity: titleCount / count });
     }
   } catch (error) {
