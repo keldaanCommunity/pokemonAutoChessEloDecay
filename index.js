@@ -339,18 +339,14 @@ async function main() {
     console.log("count the numbers of users...");
     const count = await user_metadata_default.countDocuments();
     console.log(count, " users found");
+    await title_statistic_default.collection.drop();
     for (let i = 0; i < Object.values(Title).length; i++) {
       const title = Object.values(Title)[i];
       const titleCount = await user_metadata_default.countDocuments({
         titles: { $in: title }
       });
       const titleStat = await title_statistic_default.findOne({ name: title });
-      if (titleStat) {
-        titleStat.rarity = titleCount / count;
-        await titleStat.save();
-      } else {
-        await title_statistic_default.create({ name: title, rarity: titleCount / count });
-      }
+      await title_statistic_default.create({ name: title, rarity: titleCount / count });
     }
   } catch (error) {
     throw error;

@@ -51,19 +51,14 @@ export default async function main() {
     console.log("count the numbers of users...")
     const count = await userMetadata.countDocuments()
     console.log(count, " users found")
-
+    await titleStatistic.collection.drop()
     for (let i = 0; i < Object.values(Title).length; i++) {
       const title = Object.values(Title)[i]
       const titleCount = await userMetadata.countDocuments({
         titles: { $in: title }
       })
       const titleStat = await titleStatistic.findOne({ name: title })
-      if (titleStat) {
-        titleStat.rarity = titleCount / count
-        await titleStat.save()
-      } else {
-        await titleStatistic.create({ name: title, rarity: titleCount / count })
-      }
+      await titleStatistic.create({ name: title, rarity: titleCount / count })
     }
   } catch (error) {
     throw error
