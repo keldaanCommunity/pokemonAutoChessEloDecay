@@ -339,12 +339,12 @@ async function main() {
     console.log("count the numbers of users...");
     const count = await user_metadata_default.countDocuments();
     console.log(count, " users found");
-    await title_statistic_default.collection.drop();
     for (let i = 0; i < Object.values(Title).length; i++) {
       const title = Object.values(Title)[i];
       const titleCount = await user_metadata_default.countDocuments({
         titles: { $in: title }
       });
+      await title_statistic_default.deleteMany({ name: title });
       await title_statistic_default.create({ name: title, rarity: titleCount / count });
     }
   } catch (error) {
