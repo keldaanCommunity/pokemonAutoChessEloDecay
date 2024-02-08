@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 import { connect } from "mongoose"
 import detailledStatistic from "./models/detailled-statistic"
+import history from "./models/history"
 import titleStatistic from "./models/title-statistic"
 import userMetadata from "./models/user-metadata"
 import { Title } from "./types"
@@ -59,6 +60,19 @@ export default async function main() {
       await titleStatistic.deleteMany({ name: title })
       await titleStatistic.create({ name: title, rarity: titleCount / count })
     }
+
+    console.log("deleting 4 weeks old games...")
+    const deleteResults = await detailledStatistic.deleteMany({
+      time: { $lt: Date.now() - 86400 * 1000 * 30 }
+    })
+    const allGames = await detailledStatistic.countDocuments()
+    console.log(deleteResults, allGames)
+
+    const historyResults = await history.deleteMany({
+      startTime: { $lt: Date.now() - 86400 * 1000 * 30 }
+    })
+    const histories = await history.countDocuments()
+    console.log(historyResults, histories)
   } catch (error) {
     throw error
   } finally {

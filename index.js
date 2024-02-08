@@ -34,7 +34,7 @@ __export(pokemonAutoChessEloDecay_exports, {
 });
 module.exports = __toCommonJS(pokemonAutoChessEloDecay_exports);
 var import_dotenv = __toESM(require("dotenv"));
-var import_mongoose4 = require("mongoose");
+var import_mongoose5 = require("mongoose");
 
 // models/detailled-statistic.ts
 var import_mongoose = require("mongoose");
@@ -77,9 +77,61 @@ var detailled_statistic_default = (0, import_mongoose.model)(
   statisticSchema
 );
 
-// models/title-statistic.ts
+// models/history.ts
 var import_mongoose2 = require("mongoose");
-var titleSchema = new import_mongoose2.Schema({
+var historyPokemon = new import_mongoose2.Schema({
+  name: {
+    type: String
+  },
+  avatar: {
+    type: String
+  },
+  inventory: [
+    {
+      type: String
+    }
+  ]
+});
+var history = new import_mongoose2.Schema(
+  {
+    id: { type: String },
+    name: { type: String },
+    startTime: { type: Number },
+    endTime: { type: Number },
+    players: [
+      {
+        id: { type: String },
+        avatar: { type: String },
+        name: { type: String },
+        elo: { type: Number },
+        rank: { type: Number },
+        pokemons: [historyPokemon]
+      }
+    ]
+  },
+  {
+    toJSON: {
+      transform: function(doc, ret) {
+        delete ret._id;
+        delete ret.__v;
+        ret.players.forEach((p) => {
+          p.pokemons.forEach((po) => {
+            po.inventory.forEach((i) => {
+              delete i._id;
+            });
+            delete po._id;
+          });
+          delete p._id;
+        });
+      }
+    }
+  }
+);
+var history_default = (0, import_mongoose2.model)("History", history);
+
+// models/title-statistic.ts
+var import_mongoose3 = require("mongoose");
+var titleSchema = new import_mongoose3.Schema({
   name: {
     type: String
   },
@@ -87,11 +139,11 @@ var titleSchema = new import_mongoose2.Schema({
     type: Number
   }
 });
-var title_statistic_default = (0, import_mongoose2.model)("TitleStatistic", titleSchema);
+var title_statistic_default = (0, import_mongoose3.model)("TitleStatistic", titleSchema);
 
 // models/user-metadata.ts
-var import_mongoose3 = require("mongoose");
-var userMetadataSchema = new import_mongoose3.Schema({
+var import_mongoose4 = require("mongoose");
+var userMetadataSchema = new import_mongoose4.Schema({
   uid: {
     type: String
   },
@@ -226,7 +278,7 @@ var userMetadataSchema = new import_mongoose3.Schema({
     }
   }
 });
-var user_metadata_default = (0, import_mongoose3.model)("UserMetadata", userMetadataSchema);
+var user_metadata_default = (0, import_mongoose4.model)("UserMetadata", userMetadataSchema);
 
 // types/index.ts
 var Title = /* @__PURE__ */ ((Title2) => {
@@ -298,7 +350,7 @@ var Title = /* @__PURE__ */ ((Title2) => {
 // index.ts
 async function main() {
   import_dotenv.default.config();
-  const db = await (0, import_mongoose4.connect)(process.env.MONGO_URI);
+  const db = await (0, import_mongoose5.connect)(process.env.MONGO_URI);
   try {
     const users = await user_metadata_default.find(
       { elo: { $gt: 1100 } },
@@ -347,6 +399,17 @@ async function main() {
       await title_statistic_default.deleteMany({ name: title });
       await title_statistic_default.create({ name: title, rarity: titleCount / count });
     }
+    console.log("deleting 4 weeks old games...");
+    const deleteResults = await detailled_statistic_default.deleteMany({
+      time: { $lt: Date.now() - 86400 * 1e3 * 30 }
+    });
+    const allGames = await detailled_statistic_default.countDocuments();
+    console.log(deleteResults, allGames);
+    const historyResults = await history_default.deleteMany({
+      startTime: { $lt: Date.now() - 86400 * 1e3 * 30 }
+    });
+    const histories = await history_default.countDocuments();
+    console.log(historyResults, histories);
   } catch (error) {
     throw error;
   } finally {
