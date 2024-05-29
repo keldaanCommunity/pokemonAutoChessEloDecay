@@ -6,6 +6,7 @@
     "mongoose": "^7.4.4"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.7.3",
     "@types/node": "^20.5.4"
   },
   "scripts": {

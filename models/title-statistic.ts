@@ -1,17 +1,17 @@
-import { Schema, model } from "mongoose"
+import { Schema, model } from "mongoose";
 
 export interface ITitleStatistic {
-  name: string
-  rarity: number
+	name: string;
+	rarity: number;
 }
 
 const titleSchema = new Schema({
-  name: {
-    type: String
-  },
-  rarity: {
-    type: Number
-  }
-})
+	name: {
+		type: String,
+	},
+	rarity: {
+		type: Number,
+	},
+});
 
-export default model<ITitleStatistic>("TitleStatistic", titleSchema)
+export default model<ITitleStatistic>("TitleStatistic", titleSchema);

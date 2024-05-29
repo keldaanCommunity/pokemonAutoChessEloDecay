@@ -344,6 +344,9 @@ var Title = /* @__PURE__ */ ((Title2) => {
   Title2["VANQUISHER"] = "VANQUISHER";
   Title2["OUTSIDER"] = "OUTSIDER";
   Title2["GLUTTON"] = "GLUTTON";
+  Title2["STARGAZER"] = "STARGAZER";
+  Title2["BLOODY"] = "BLOODY";
+  Title2["ETERNAL"] = "ETERNAL";
   return Title2;
 })(Title || {});
 
@@ -411,6 +414,7 @@ async function main() {
     const histories = await history_default.countDocuments();
     console.log(historyResults, histories);
   } catch (error) {
+    console.error(error);
     throw error;
   } finally {
     console.log("disconnect db");
