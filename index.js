@@ -33,7 +33,10 @@ __export(pokemonAutoChessEloDecay_exports, {
   default: () => main
 });
 module.exports = __toCommonJS(pokemonAutoChessEloDecay_exports);
+var import_dayjs = __toESM(require("dayjs"));
+var import_relativeTime = __toESM(require("dayjs/plugin/relativeTime"));
 var import_dotenv = __toESM(require("dotenv"));
+var import_firebase_admin = __toESM(require("firebase-admin"));
 var import_mongoose5 = require("mongoose");
 
 // models/detailled-statistic.ts
@@ -351,68 +354,25 @@ var Title = /* @__PURE__ */ ((Title2) => {
 })(Title || {});
 
 // index.ts
+import_dayjs.default.extend(import_relativeTime.default);
 async function main() {
   import_dotenv.default.config();
+  import_firebase_admin.default.initializeApp({
+    credential: import_firebase_admin.default.credential.cert({
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+    })
+  });
   const db = await (0, import_mongoose5.connect)(process.env.MONGO_URI);
   try {
-    const users = await user_metadata_default.find(
-      { elo: { $gt: 1100 } },
-      ["uid", "elo", "displayName"],
-      { sort: { level: -1 } }
-    );
-    if (users && users.length > 0) {
-      console.log("Checking activity of ", users.length, " users");
-      for (let i = 0; i < users.length; i++) {
-        const u = users[i];
-        const stats = await detailled_statistic_default.find(
-          { playerId: u.uid },
-          ["time"],
-          {
-            limit: 1,
-            sort: { time: -1 }
-          }
-        );
-        if (stats && stats.length > 0) {
-          const time = stats[0].time;
-          if (time) {
-            const lastGame = new Date(time);
-            const now = new Date(Date.now());
-            if (now.getTime() - lastGame.getTime() > 86400 * 1e3 * 10) {
-              const decay = Math.max(1100, u.elo - 10);
-              console.log(
-                `user ${u.displayName} (${u.elo}) will decay to ${decay}`
-              );
-              u.elo = decay;
-              await u.save();
-            }
-          }
-        }
-      }
-    } else {
-      console.log("No users to check");
-    }
-    console.log("count the numbers of users...");
-    const count = await user_metadata_default.countDocuments();
-    console.log(count, " users found");
-    for (let i = 0; i < Object.values(Title).length; i++) {
-      const title = Object.values(Title)[i];
-      const titleCount = await user_metadata_default.countDocuments({
-        titles: { $in: title }
-      });
-      await title_statistic_default.deleteMany({ name: title });
-      await title_statistic_default.create({ name: title, rarity: titleCount / count });
-    }
-    console.log("deleting 4 weeks old games...");
-    const deleteResults = await detailled_statistic_default.deleteMany({
-      time: { $lt: Date.now() - 86400 * 1e3 * 30 }
-    });
-    const allGames = await detailled_statistic_default.countDocuments();
-    console.log(deleteResults, allGames);
-    const historyResults = await history_default.deleteMany({
-      startTime: { $lt: Date.now() - 86400 * 1e3 * 30 }
-    });
-    const histories = await history_default.countDocuments();
-    console.log(historyResults, histories);
+    await deleteAnonymous();
+    await eloDecay();
+    await titleStats();
+    await deleteOldHistory();
   } catch (error) {
     console.error(error);
     throw error;
@@ -420,5 +380,108 @@ async function main() {
     console.log("disconnect db");
     await db.disconnect();
   }
+}
+async function deleteAnonymous() {
+  console.log("deleting anonymous accounts...");
+  const currentDate = (0, import_dayjs.default)();
+  const oneMonthLimit = currentDate.subtract(1, "month");
+  const anonymousAccounts = new Array();
+  await listAllUsers();
+  async function listAllUsers(nextPageToken) {
+    const listUsersResult = await import_firebase_admin.default.auth().listUsers(1e3, nextPageToken);
+    console.log(nextPageToken);
+    listUsersResult.users.forEach((userRecord) => {
+      const lastSignInDate = (0, import_dayjs.default)(userRecord.metadata.lastSignInTime);
+      if (userRecord.email === void 0 && userRecord.photoURL === void 0 && userRecord.metadata.lastSignInTime && lastSignInDate.isBefore(oneMonthLimit)) {
+        anonymousAccounts.push(userRecord);
+      }
+    });
+    if (listUsersResult.pageToken) {
+      await listAllUsers(listUsersResult.pageToken);
+    }
+  }
+  console.log(
+    "deleting ",
+    anonymousAccounts.length,
+    " 1 month inactive anonymous accounts"
+  );
+  while (anonymousAccounts.length > 0) {
+    const batchDeletion = new Array();
+    for (let i = 0; i < 999; i++) {
+      const account = anonymousAccounts.pop();
+      account && batchDeletion.push(account.uid);
+    }
+    const firebaseDeletion = await import_firebase_admin.default.auth().deleteUsers(batchDeletion);
+    console.log("firebase deletion result ", firebaseDeletion);
+    const pacDeletion = await user_metadata_default.deleteMany({
+      uid: { $in: batchDeletion }
+    });
+    console.log("pac deletion result ", pacDeletion);
+  }
+}
+async function eloDecay() {
+  console.log("computing elo decay...");
+  const users = await user_metadata_default.find({ elo: { $gt: 1100 } }, [
+    "uid",
+    "elo",
+    "displayName"
+  ]);
+  if (users && users.length > 0) {
+    console.log("Checking activity of ", users.length, " users");
+    for (let i = 0; i < users.length; i++) {
+      const u = users[i];
+      const stats = await detailled_statistic_default.find(
+        { playerId: u.uid },
+        ["time"],
+        {
+          limit: 1,
+          sort: { time: -1 }
+        }
+      );
+      if (stats && stats.length > 0) {
+        const time = stats[0].time;
+        if (time) {
+          const lastGame = new Date(time);
+          const now = new Date(Date.now());
+          if (now.getTime() - lastGame.getTime() > 86400 * 1e3 * 10) {
+            const decay = Math.max(1100, u.elo - 10);
+            console.log(
+              `user ${u.displayName} (${u.elo}) will decay to ${decay}`
+            );
+            u.elo = decay;
+            await u.save();
+          }
+        }
+      }
+    }
+  } else {
+    console.log("No users to check");
+  }
+}
+async function titleStats() {
+  console.log("count the numbers of users...");
+  const count = await user_metadata_default.countDocuments();
+  console.log(count, " users found");
+  for (let i = 0; i < Object.values(Title).length; i++) {
+    const title = Object.values(Title)[i];
+    const titleCount = await user_metadata_default.countDocuments({
+      titles: { $in: title }
+    });
+    await title_statistic_default.deleteMany({ name: title });
+    await title_statistic_default.create({ name: title, rarity: titleCount / count });
+  }
+}
+async function deleteOldHistory() {
+  console.log("deleting 4 weeks old games...");
+  const deleteResults = await detailled_statistic_default.deleteMany({
+    time: { $lt: Date.now() - 86400 * 1e3 * 30 }
+  });
+  const allGames = await detailled_statistic_default.countDocuments();
+  console.log(deleteResults, allGames);
+  const historyResults = await history_default.deleteMany({
+    startTime: { $lt: Date.now() - 86400 * 1e3 * 30 }
+  });
+  const histories = await history_default.countDocuments();
+  console.log(historyResults, histories);
 }
 main();

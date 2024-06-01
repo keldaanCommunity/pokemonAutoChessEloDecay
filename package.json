@@ -1,8 +1,10 @@
 {
   "dependencies": {
     "airplane": "^0.2.72",
+    "dayjs": "^1.11.11",
     "dotenv": "^16.3.1",
     "esbuild": "^0.19.2",
+    "firebase-admin": "^12.1.1",
     "mongoose": "^7.4.4"
   },
   "devDependencies": {
