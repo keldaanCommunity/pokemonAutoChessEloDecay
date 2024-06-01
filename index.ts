@@ -13,11 +13,11 @@ export default async function main() {
 	// biome-ignore lint/style/noNonNullAssertion: <explanation>
 	const db = await connect(process.env.MONGO_URI!);
 	try {
-		const users = await userMetadata.find(
-			{ elo: { $gt: 1100 } },
-			["uid", "elo", "displayName"],
-			{ sort: { level: -1 } },
-		);
+		const users = await userMetadata.find({ elo: { $gt: 1100 } }, [
+			"uid",
+			"elo",
+			"displayName",
+		]);
 		if (users && users.length > 0) {
 			console.log("Checking activity of ", users.length, " users");
 			for (let i = 0; i < users.length; i++) {
