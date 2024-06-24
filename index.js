@@ -283,76 +283,6 @@ var userMetadataSchema = new import_mongoose4.Schema({
 });
 var user_metadata_default = (0, import_mongoose4.model)("UserMetadata", userMetadataSchema);
 
-// types/index.ts
-var Title = /* @__PURE__ */ ((Title2) => {
-  Title2["NOVICE"] = "NOVICE";
-  Title2["ROOKIE"] = "ROOKIE";
-  Title2["AMATEUR"] = "AMATEUR";
-  Title2["VETERAN"] = "VETERAN";
-  Title2["PRO"] = "PRO";
-  Title2["EXPERT"] = "EXPERT";
-  Title2["ELITE"] = "ELITE";
-  Title2["MASTER"] = "MASTER";
-  Title2["GRAND_MASTER"] = "GRAND_MASTER";
-  Title2["BIRD_KEEPER"] = "BIRD_KEEPER";
-  Title2["BLACK_BELT"] = "BLACK_BELT";
-  Title2["BUG_MANIAC"] = "BUG_MANIAC";
-  Title2["CUTE_MANIAC"] = "CUTE_MANIAC";
-  Title2["DELINQUENT"] = "DELINQUENT";
-  Title2["DRAGON_TAMER"] = "DRAGON_TAMER";
-  Title2["FIREFIGHTER"] = "FIREFIGHTER";
-  Title2["TEAM_ROCKET_GRUNT"] = "TEAM_ROCKET_GRUNT";
-  Title2["HIKER"] = "HIKER";
-  Title2["LONE_WOLF"] = "LONE_WOLF";
-  Title2["KINDLER"] = "KINDLER";
-  Title2["GARDENER"] = "GARDENER";
-  Title2["MUSEUM_DIRECTOR"] = "MUSEUM_DIRECTOR";
-  Title2["ENGINEER"] = "ENGINEER";
-  Title2["TELEKINESIST"] = "TELEKINESIST";
-  Title2["ELECTRICIAN"] = "ELECTRICIAN";
-  Title2["GEOLOGIST"] = "GEOLOGIST";
-  Title2["MYTH_TRAINER"] = "MYTH_TRAINER";
-  Title2["DIVER"] = "DIVER";
-  Title2["POKEMON_RANGER"] = "POKEMON_RANGER";
-  Title2["CAMPER"] = "CAMPER";
-  Title2["RIVAL"] = "RIVAL";
-  Title2["SKIER"] = "SKIER";
-  Title2["POKEFAN"] = "POKEFAN";
-  Title2["HEX_MANIAC"] = "HEX_MANIAC";
-  Title2["MUSICIAN"] = "MUSICIAN";
-  Title2["BABYSITTER"] = "BABYSITTER";
-  Title2["ALCHEMIST"] = "ALCHEMIST";
-  Title2["HARLEQUIN"] = "HARLEQUIN";
-  Title2["GLITCH_TRAINER"] = "GLITCH_TRAINER";
-  Title2["NURSE"] = "NURSE";
-  Title2["GARDIAN"] = "GARDIAN";
-  Title2["DUKE"] = "DUKE";
-  Title2["DUCHESS"] = "DUCHESS";
-  Title2["CHAMPION"] = "CHAMPION";
-  Title2["ELITE_FOUR_MEMBER"] = "ELITE_FOUR_MEMBER";
-  Title2["GYM_LEADER"] = "GYM_LEADER";
-  Title2["GYM_CHALLENGER"] = "GYM_CHALLENGER";
-  Title2["GYM_TRAINER"] = "GYM_TRAINER";
-  Title2["ACE_TRAINER"] = "ACE_TRAINER";
-  Title2["BACKER"] = "BACKER";
-  Title2["TYRANT"] = "TYRANT";
-  Title2["SURVIVOR"] = "SURVIVOR";
-  Title2["GAMBLER"] = "GAMBLER";
-  Title2["BOT_BUILDER"] = "BOT_BUILDER";
-  Title2["SHINY_SEEKER"] = "SHINY_SEEKER";
-  Title2["ARCHEOLOGIST"] = "ARCHEOLOGIST";
-  Title2["DENTIST"] = "DENTIST";
-  Title2["FISHERMAN"] = "FISHERMAN";
-  Title2["CHOSEN_ONE"] = "CHOSEN_ONE";
-  Title2["VANQUISHER"] = "VANQUISHER";
-  Title2["OUTSIDER"] = "OUTSIDER";
-  Title2["GLUTTON"] = "GLUTTON";
-  Title2["STARGAZER"] = "STARGAZER";
-  Title2["BLOODY"] = "BLOODY";
-  Title2["ETERNAL"] = "ETERNAL";
-  return Title2;
-})(Title || {});
-
 // index.ts
 import_dayjs.default.extend(import_relativeTime.default);
 async function main() {
@@ -462,8 +392,9 @@ async function titleStats() {
   console.log("count the numbers of users...");
   const count = await user_metadata_default.countDocuments();
   console.log(count, " users found");
-  for (let i = 0; i < Object.values(Title).length; i++) {
-    const title = Object.values(Title)[i];
+  const titleEnum = await (await fetch("https://pokemon-auto-chess.com/title-names")).json();
+  for (let i = 0; i < Object.values(titleEnum).length; i++) {
+    const title = Object.values(titleEnum)[i];
     const titleCount = await user_metadata_default.countDocuments({
       titles: { $in: title }
     });
